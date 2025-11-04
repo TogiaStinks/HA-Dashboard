@@ -1,0 +1,1254 @@
+button_card_templates:
+  ios_pill_tile:
+    variables:
+      pill_on_bg: rgba(255,255,255,0.85)
+      pill_off_bg: rgba(255,255,255,0.12)
+      icon_bg_on: '#F5C542'
+      icon_bg_off: '#A0A0A0'
+      icon_color: '#FFFFFF'
+      text_on: '#000'
+      text_off: rgba(255,255,255,0.9)
+      subtext_on: rgba(0,0,0,0.6)
+      subtext_off: rgba(255,255,255,0.7)
+      pill_alert_bg: rgba(255,255,255,0.92)
+      icon_alert_bg: '#3B82F6'
+    show_name: true
+    show_label: true
+    show_icon: true
+    tap_action:
+      action: toggle
+    layout: icon_name_state2
+    size: 20px
+    styles:
+      card:
+        - border-radius: 18px
+        - padding: 10px 14px
+        - box-shadow: 0 6px 14px rgba(0,0,0,0.18)
+        - border: none
+        - height: 72px
+        - width: 200px
+        - background: |
+            [[[
+              const id = (entity.entity_id || '');
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+
+              // "Alert" when a lock is UNLOCKED or a cover is OPEN/OPENING
+              const isAlert =
+                (domain === 'lock'  && s === 'unlocked') ||
+                (domain === 'cover' && (s === 'open' || s === 'opening'));
+
+              // For other domains keep your original on/off background
+              if (isAlert) return variables.pill_alert_bg;
+              return s === 'on' ? variables.pill_on_bg : variables.pill_off_bg;
+            ]]]
+      grid:
+        - grid-template-columns: 46px 1fr
+        - grid-template-areas: '"i n" "i l"'
+        - column-gap: 12px
+        - align-items: center
+      name:
+        - grid-area: 'n'
+        - justify-self: start
+        - font-weight: 700
+        - font-size: 15px
+        - color: |
+            [[[
+              const id = (entity.entity_id || '');
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+              const isAlert =
+                (domain === 'lock'  && s === 'unlocked') ||
+                (domain === 'cover' && (s === 'open' || s === 'opening'));
+
+              // Bright text when alert, else your original on/off text color
+              if (isAlert) return variables.text_on;
+              return s === 'on' ? variables.text_on : variables.text_off;
+            ]]]
+      label:
+        - grid-area: l
+        - justify-self: start
+        - font-size: 13px
+        - margin-top: 2px
+        - color: |
+            [[[
+              const id = (entity.entity_id || '');
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+              const isAlert =
+                (domain === 'lock'  && s === 'unlocked') ||
+                (domain === 'cover' && (s === 'open' || s === 'opening'));
+
+              if (isAlert) return variables.subtext_on;
+              return s === 'on' ? variables.subtext_on : variables.subtext_off;
+            ]]]
+      img_cell:
+        - grid-area: i
+        - align-self: center
+        - justify-self: center
+        - border-radius: 50%
+        - width: 40px
+        - height: 40px
+        - background: |
+            [[[
+              const id = (entity.entity_id || '');
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+              const isAlert =
+                (domain === 'lock'  && s === 'unlocked') ||
+                (domain === 'cover' && (s === 'open' || s === 'opening'));
+
+              // Blue circle when alert, otherwise your original on/off circle
+              return isAlert ? variables.icon_alert_bg
+                             : (s === 'on' ? variables.icon_bg_on : variables.icon_bg_off);
+            ]]]
+      icon:
+        - width: 22px
+        - color: '[[[ return variables.icon_color; ]]]'
+    label: |
+      [[[
+        const id = (entity.entity_id || '');
+        const domain = id.split('.')[0] || '';
+
+        // LOCK: show Locked/Unlocked
+        if (domain === 'lock') {
+          return entity.state === 'unlocked' ? 'Unlocked' : 'Locked';
+        }
+
+        // COVER (garage door): show Open/Closed/Moving
+        if (domain === 'cover') {
+          if (entity.state === 'opening' || entity.state === 'closing') return 'Moving';
+          return entity.state === 'open' ? 'Open' : 'Closed';
+        }
+
+        // LIGHT: show brightness %
+        if (domain === 'light') {
+          if (entity.state !== 'on') return 'Off';
+          const b = entity.attributes.brightness;
+          if (b == null) return 'On';
+          return Math.round(b/2.55) + '%';
+        }
+
+        // FAN: show percentage or speed/preset
+        if (domain === 'fan') {
+          if (entity.state !== 'on') return 'Off';
+          const p = entity.attributes.percentage;
+          if (p != null) return p + '%';
+          const sp = entity.attributes.speed || entity.attributes.preset_mode;
+          return sp ? String(sp) : 'On';
+        }
+
+        // Default
+        return entity.state ? (entity.state[0].toUpperCase()+entity.state.slice(1)) : '';
+      ]]]
+views:
+  - title: Home
+    type: sections
+    icon: phu:homekit
+    path: mobile-overview
+    subview: true
+    background:
+      opacity: 70
+      alignment: center
+      size: cover
+      repeat: repeat
+      attachment: fixed
+      image: /api/image/serve/46d2539a6039ff30317494db1451b65f/original
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            icon: phu:glasspanel-door-closed
+            heading: Entrance
+            heading_style: title
+            badges: []
+            grid_options:
+              columns: 24
+              rows: 1
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: cover.garage_door
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: lock.front_door
+                name: Front Door
+                icon: mdi:door
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:button-card
+            template: ios_pill_tile
+            name: Cameras
+            show_label: true
+            label: 5 Online
+            entity: input_button.online
+            icon: hue:ceiling-fugato-two-alt
+            tap_action:
+              action: navigate
+              navigation_path: '#cloosisgay'
+            grid_options:
+              columns: 12
+              rows: auto
+            card_mod:
+              style: |
+                ha-card {
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                }
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Office
+            heading_style: title
+            icon: hue:room-office
+            grid_options:
+              columns: 24
+              rows: 1
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: vacuum.roborock_q8_max
+                name: Roborock Q8
+                icon: phu:roborock
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.officelights
+                name: Desk Lights
+                icon: phu:desk-sit-alt
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.office_lamp
+                name: Lamp
+                icon: phu:nanoleaf-floorlamp
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.rgbic_tv_light_bars
+                name: Monitor
+                icon: null
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+            heading: Bedroom
+            icon: hue:room-bedroom
+            grid_options:
+              columns: 24
+              rows: 1
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.bedroom
+                name: Bedroom
+                icon: hue:bulb-group-recessed-ceiling
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.bedroom_tv
+                name: Bedroom TV
+                icon: hue:lightstrip-tv
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: fan.bedroom_fan
+                name: Bedroom Fan
+                icon: cil:pedestal-fan
+                variables:
+                  icon_bg_on: '#3BA7FF'
+                  icon_bg_off: '#A0A0A0'
+                styles:
+                  icon:
+                    - animation: |
+                        [[[ 
+                          return entity.state === 'on' ? 'spin 1s linear infinite' : 'none';
+                        ]]]
+                extra_styles: |
+                  @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                  }
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.nightstand_lamps
+                name: Nightstand Lamps
+                icon: hue:beyond-down-group
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Kitchen
+            heading_style: title
+            icon: phu:rooms-kitchen
+            grid_options:
+              columns: 24
+              rows: 1
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.kitchen_ceiling_lights_77
+                name: Ceiling
+                icon: hue:bulb-group-recessed-ceiling
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.cabinets
+                name: Cabinets
+                icon: hue:play-bar-two
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.kitchen_island
+                name: Kitchen Island
+                icon: hue:pendant-devote-three-solid
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.dining_room
+                name: Dining Room
+                icon: hue:amaze-alt
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Living Room
+            heading_style: title
+            icon: mdi:sofa
+            grid_options:
+              columns: 24
+              rows: 1
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.living_room_tv_2
+                name: Living Room TV
+                icon: hue:lightstrip-tv
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.living_room_lamp
+                name: Lamp
+                icon: hue:floor-shade
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.living_room_ceiling
+                name: Ceiling
+                icon: hue:bulb-group-recessed-ceiling
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.living_room_tv_bar
+                name: TV Bar
+                icon: hue:play-bar
+                card_mod:
+                  style: |
+                    ha-card {
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    }
+            grid_options:
+              columns: 12
+              rows: auto
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Quick Access
+            heading_style: title
+            icon: mdi:format-align-center
+            grid_options:
+              columns: 24
+              rows: 1
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: custom:button-card
+            template: ios_pill_tile
+            name: Settings
+            show_label: true
+            label: Quick Access
+            entity: input_button.online
+            icon: mdi:cog
+            tap_action:
+              action: navigate
+              navigation_path: '#admin-settings'
+            grid_options:
+              columns: 12
+              rows: auto
+      - type: grid
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#admin-settings'
+                name: Settings
+                icon: mdi:cog
+                button_type: name
+                show_header: false
+                bg_opacity: '0'
+                width_desktop: 600px
+                margin_top_desktop: 750px
+                margin_top_mobile: 400px
+                bg_blur: '0'
+              - type: grid
+                columns: 4
+                square: false
+                cards:
+                  - type: button
+                    entity: update.matter_server_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: >-
+                        http://homeassistant.local:8123/hassio/ingress/core_matter_server
+                    name: Matter Server
+                    icon: phu:matter
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: input_button.settings
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config
+                    name: Settings
+                    icon: mdi:cog
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.hacs_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: http://homeassistant.local:8123/hacs/dashboard
+                    name: HACS
+                    icon: hacs:hacs
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.scrypted_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: >-
+                        http://homeassistant.local:8123/09e60fb6_scrypted/ingress
+                    name: Scrypted
+                    icon: mdi:cctv
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.file_editor_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: >-
+                        http://homeassistant.local:8123/core_configurator/ingress
+                    name: File Editor
+                    icon: mdi:wrench
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.esphome_device_builder_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: http://homeassistant.local:8123/config/entities
+                    name: Entities
+                    icon: bha:homeassistant
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.go2rtc_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: http://homeassistant.local:8123/a889bffc_go2rtc/ingress
+                    name: Go2RTC
+                    icon: mdi:eye-arrow-left
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.esphome_device_builder_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: >-
+                        http://homeassistant.local:8123/config/automation/dashboard
+                    icon: cil:home-import-no-roof-outline
+                    name: Automations
+                    show_state: false
+                    show_name: true
+          - type: vertical-stack
+            cards:
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#cloosisgay'
+                name: Cameras
+                icon: mdi:cctv
+                button_type: name
+                show_header: false
+                card_layout: normal
+                hide_backdrop: true
+                bg_opacity: '30'
+                width_desktop: 1500px
+                background_update: true
+                margin_top_desktop: 100px
+                margin_top_mobile: 100px
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+                  - type: custom:webrtc-camera
+                    url: rtsp://homeassistant.local:8554/a
+                  - type: custom:webrtc-camera
+                    url: rtsp://homeassistant.local:8554/b
+                  - type: custom:webrtc-camera
+                    url: rtsp://homeassistant.local:8554/c
+                  - type: custom:webrtc-camera
+                    url: rtsp://homeassistant.local:8554/d
+          - type: vertical-stack
+            cards:
+              - type: custom:mushroom-lock-card
+                entity: lock.front_door
+                name: Front Door
+                layout: vertical
+                fill_container: false
+                primary_info: name
+                secondary_info: state
+                tap_action:
+                  action: toggle
+                hold_action:
+                  action: more-info
+                double_tap_action:
+                  action: none
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#frontdoor'
+                show_header: false
+                margin_top_mobile: '0'
+                margin_top_desktop: '0'
+                width_desktop: 400px
+                bg_opacity: '0'
+                hide_backdrop: true
+                entity: lock.front_door
+                button_type: name
+                card_layout: large-sub-buttons-grid
+                bg_blur: '0'
+              - type: custom:mushroom-cover-card
+                entity: cover.garage_door
+                show_buttons_control: true
+                show_position_control: false
+                show_tilt_position_control: false
+                name: Garage
+                icon: mdi:garage-variant
+                primary_info: name
+                secondary_info: state
+                layout: vertical
+                fill_container: false
+            grid_options:
+              columns: 4
+              rows: 1
+    header:
+      layout: center
+      card:
+        type: custom:mushroom-title-card
+        title: |-
+          {%- if now().hour < 12 -%}Good Morning
+          {%- elif now().hour < 18 -%}Good Afternoon
+          {%- else -%}Good Evening{%- endif -%}, {{user}}
+        subtitle: |
+          {{ now().strftime('%A, %B, %d') }}
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        alignment: center
+        card_mod:
+          style: |
+            .title {
+              color: #eeeeee !important;
+              font-size: 40px !important;
+              font-weight: 400 !important;
+              border-bottom: 3px solid #aaaaaa;
+              padding-bottom: 19px;
+              display: inline-block;
+              text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            }
+            .subtitle {
+              color: #eeeeee !important;
+              font-size: 30px !important;
+              font-weight: 300 !important;
+              padding-top: 5px;
+              text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+            }
+      badges_position: bottom
+      badges_wrap: wrap
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.lights_on_count
+        name: Lights
+        tap_action:
+          action: navigate
+          navigation_path: http://homeassistant.local:8123/lovelace/lights
+        show_entity_picture: false
+        color: gold
+        icon: mdi:lightbulb
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.indoor_temp
+        name: Climate
+        color: cyan
+        show_entity_picture: true
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        icon: ''
+        state_content: temperature
+        show_entity_picture: false
+        entity: weather.forecast_home
+        name: Outside
+      - type: custom:mushroom-template-badge
+        label: Cameras
+        content: 5 Online
+        color: teal
+        icon: phu:reolink-trackmix
+        tap_action:
+          action: navigate
+          navigation_path: '#cloosisgay'
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: lock.front_door
+        icon: phu:glasspanel-door-closed
+        show_entity_picture: true
+        tap_action:
+          action: navigate
+          navigation_path: '#frontdoor'
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: cover.garage_door
+        show_entity_picture: false
+        tap_action:
+          action: navigate
+          navigation_path: '#frontdoor'
+        icon: mdi:garage-variant-lock
+    cards: []
+    theme: Liquid Glass
+    visible:
+      - user: 8342fba329774a0ba1c7eab77c3abe42
+  - title: Home
+    type: sections
+    icon: mdi:phone
+    path: mobile
+    subview: true
+    background:
+      opacity: 70
+      alignment: center
+      size: cover
+      repeat: repeat
+      attachment: fixed
+      image: /api/image/serve/46d2539a6039ff30317494db1451b65f/original
+    max_columns: 1
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            icon: phu:glasspanel-door-closed
+            heading: Entrance
+            heading_style: title
+            badges: []
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: cover.garage_door
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: lock.front_door
+                name: Front Door
+                icon: mdi:door
+          - type: custom:button-card
+            template: ios_pill_tile
+            name: Cameras
+            show_label: true
+            label: 5 Online
+            entity: input_button.online
+            icon: hue:ceiling-fugato-two-alt
+            tap_action:
+              action: navigate
+              navigation_path: '#cloosisgay'
+          - type: vertical-stack
+            cards:
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#cloosisgay'
+                name: Cameras
+                icon: mdi:cctv
+                button_type: name
+                show_header: false
+                card_layout: normal
+                hide_backdrop: true
+                bg_opacity: '30'
+                width_desktop: 1500px
+                background_update: true
+                margin_top_desktop: 200px
+                margin_top_mobile: 200px
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+                  - type: custom:webrtc-camera
+                    url: rtsp://homeassistant.local:8554/a
+                  - type: custom:webrtc-camera
+                    url: rtsp://homeassistant.local:8554/b
+                  - type: custom:webrtc-camera
+                    url: rtsp://homeassistant.local:8554/c
+                  - type: custom:webrtc-camera
+                    url: rtsp://homeassistant.local:8554/d
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Office
+            heading_style: title
+            icon: hue:room-office
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: vacuum.roborock_q8_max
+                name: Roborock Q8
+                icon: phu:roborock
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.officelights
+                name: Desk Lights
+                icon: phu:desk-sit-alt
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.office_lamp
+                name: Lamp
+                icon: phu:nanoleaf-floorlamp
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+            heading: Bedroom
+            icon: hue:room-bedroom
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.bedroom
+                name: Bedroom
+                icon: hue:bulb-group-recessed-ceiling
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.bedroom_tv
+                name: Bedroom TV
+                icon: hue:lightstrip-tv
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: fan.bedroom_fan
+                name: Bedroom Fan
+                icon: cil:pedestal-fan
+                variables:
+                  icon_bg_on: '#3BA7FF'
+                  icon_bg_off: '#A0A0A0'
+                styles:
+                  icon:
+                    - animation: |
+                        [[[ 
+                          return entity.state === 'on' ? 'spin 1s linear infinite' : 'none';
+                        ]]]
+                extra_styles: |
+                  @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                  }
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.nightstand_lamps
+                name: Nightstand Lamps
+                icon: hue:beyond-down-group
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Kitchen
+            heading_style: title
+            icon: phu:rooms-kitchen
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.kitchen_ceiling_lights_77
+                name: Ceiling
+                icon: hue:bulb-group-recessed-ceiling
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.cabinets
+                name: Cabinets
+                icon: hue:play-bar-two
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.kitchen_island
+                name: Kitchen Island
+                icon: hue:pendant-devote-three-solid
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.dining_room
+                name: Dining Room
+                icon: hue:amaze-alt
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Living Room
+            heading_style: title
+            icon: mdi:sofa
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.living_room_tv_2
+                name: Living Room TV
+                icon: hue:lightstrip-tv
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.living_room_lamp
+                name: Lamp
+                icon: hue:floor-shade
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.living_room_ceiling
+                name: Ceiling
+                icon: hue:bulb-group-recessed-ceiling
+              - type: custom:button-card
+                template: ios_pill_tile
+                entity: light.living_room_tv_bar
+                name: TV Bar
+                icon: hue:play-bar
+        column_span: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Quick Access
+            heading_style: title
+            icon: mdi:format-align-center
+            card_mod:
+              style: |
+                .title {
+                  color: #eeeeee !important;
+                  font-size: 20px !important;
+                  font-weight: 300 !important;
+                  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+                }
+          - type: custom:button-card
+            template: ios_pill_tile
+            name: Settings
+            show_label: true
+            label: Quick Access
+            entity: input_button.online
+            icon: mdi:cog
+            tap_action:
+              action: navigate
+              navigation_path: '#admin-settings'
+        column_span: 1
+      - type: grid
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#admin-settings'
+                name: Settings
+                icon: mdi:cog
+                button_type: name
+                show_header: false
+                bg_opacity: '30'
+                width_desktop: 600px
+                margin_top_desktop: 750px
+                margin_top_mobile: 400px
+              - type: grid
+                columns: 4
+                square: false
+                cards:
+                  - type: button
+                    entity: update.matter_server_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: >-
+                        http://homeassistant.local:8123/hassio/ingress/core_matter_server
+                    name: Matter Server
+                    icon: phu:matter
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: input_button.settings
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config
+                    name: Settings
+                    icon: mdi:cog
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.hacs_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: http://homeassistant.local:8123/hacs/dashboard
+                    name: HACS
+                    icon: hacs:hacs
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.scrypted_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: >-
+                        http://homeassistant.local:8123/09e60fb6_scrypted/ingress
+                    name: Scrypted
+                    icon: mdi:cctv
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.file_editor_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: >-
+                        http://homeassistant.local:8123/core_configurator/ingress
+                    name: File Editor
+                    icon: mdi:wrench
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.esphome_device_builder_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: http://homeassistant.local:8123/config/entities
+                    name: Entities
+                    icon: bha:homeassistant
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.go2rtc_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: http://homeassistant.local:8123/a889bffc_go2rtc/ingress
+                    name: Go2RTC
+                    icon: mdi:eye-arrow-left
+                    show_state: false
+                    show_name: true
+                  - type: button
+                    entity: update.esphome_device_builder_update
+                    tap_action:
+                      action: navigate
+                      navigation_path: >-
+                        http://homeassistant.local:8123/config/automation/dashboard
+                    icon: cil:home-import-no-roof-outline
+                    name: Automations
+                    show_state: false
+                    show_name: true
+        column_span: 1
+    header:
+      layout: center
+      card:
+        type: custom:mushroom-title-card
+        title: |-
+          {%- if now().hour < 12 -%}Good Morning
+          {%- elif now().hour < 18 -%}Good Afternoon
+          {%- else -%}Good Evening{%- endif -%}, {{user}}
+        subtitle: |
+          {{ now().strftime('%A, %B, %d') }}
+        title_tap_action:
+          action: none
+        subtitle_tap_action:
+          action: none
+        alignment: center
+        card_mod:
+          style: |
+            .title {
+              color: #eeeeee !important;
+              font-size: 40px !important;
+              font-weight: 400 !important;
+              border-bottom: 3px solid #aaaaaa;
+              padding-bottom: 19px;
+              display: inline-block;
+              text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            }
+            .subtitle {
+              color: #eeeeee !important;
+              font-size: 30px !important;
+              font-weight: 300 !important;
+              padding-top: 5px;
+              text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+            }
+      badges_position: bottom
+      badges_wrap: scroll
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.lights_on_count
+        name: Lights
+        tap_action:
+          action: navigate
+          navigation_path: http://homeassistant.local:8123/lovelace/lights
+        show_entity_picture: false
+        color: gold
+        icon: mdi:lightbulb
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.indoor_temp
+        name: Climate
+        color: cyan
+        show_entity_picture: true
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        icon: ''
+        state_content: temperature
+        show_entity_picture: false
+        entity: weather.forecast_home
+        name: Outside
+      - type: custom:mushroom-template-badge
+        label: Cameras
+        content: 5 Online
+        color: teal
+        icon: phu:reolink-trackmix
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/Cameras
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: lock.front_door
+        icon: phu:glasspanel-door-closed
+        show_entity_picture: true
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: cover.garage_door
+        show_entity_picture: false
+        tap_action:
+          action: more-info
+        icon: mdi:garage-variant-lock
+    cards: []
+    theme: Liquid Glass
+    visible:
+      - user: 8342fba329774a0ba1c7eab77c3abe42
