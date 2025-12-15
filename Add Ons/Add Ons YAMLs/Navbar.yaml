@@ -1,0 +1,199 @@
+styles:
+  card:
+    - border-radius: 18px
+    - padding: 10px 14px
+    - box-shadow: 0 6px 14px rgba(0,0,0,0.18)
+    - border: 0
+    - height: 72px
+    - background: rgba(255,255,255,0.12)
+    - position: relative
+    - overflow: visible
+      card_mod: null
+      style: |
+        ha-card {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+  grid:
+    - grid-template-areas: "\"button1 button2 button3 button4\""
+    - grid-template-columns: 1fr 1fr 1fr 1fr
+    - column-gap: 12px
+    - align-items: center
+custom_fields:
+  button1:
+    card:
+      type: custom:button-card
+      name: Kiosk
+      icon: mdi:power
+      show_name: true
+      show_icon: true
+      tap_action:
+        action: perform-action
+        perform_action: input_boolean.toggle
+        target:
+          entity_id: input_boolean.kiosk_mode
+      styles:
+        card:
+          - border: none
+          - background: transparent
+          - box-shadow: none
+          - padding: 0
+          - cursor: pointer
+          - transition: all 0.2s ease
+        grid:
+          - grid-template-areas: "\"i\" \"n\""
+          - grid-template-rows: auto auto
+          - row-gap: 6px
+          - justify-items: center
+        icon:
+          - width: 32px
+          - height: 32px
+          - color: rgba(255,255,255,0.9)
+        name:
+          - font-size: 12px
+          - font-weight: 500
+          - color: rgba(255,255,255,0.9)
+          - text-align: center
+        img_cell:
+          - background: none
+          - border-radius: 0
+      card_mod:
+        style: |
+          ha-card:active {
+            transform: scale(0.92);
+            opacity: 0.7;
+          }
+  button2:
+    card:
+      type: custom:button-card
+      entity: light.officelights
+      name: Rooms
+      icon: hue:home
+      show_name: true
+      show_icon: true
+      tap_action:
+        action: navigate
+        navigation_path: "#groups"
+      styles:
+        card:
+          - border: none
+          - background: transparent
+          - box-shadow: none
+          - padding: 0
+          - cursor: pointer
+          - transition: all 0.2s ease
+        grid:
+          - grid-template-areas: "\"i\" \"n\""
+          - grid-template-rows: auto auto
+          - row-gap: 6px
+          - justify-items: center
+        icon:
+          - width: 28px
+          - height: 28px
+          - color: rgba(255,255,255,0.9)
+        name:
+          - font-size: 12px
+          - font-weight: 500
+          - color: rgba(255,255,255,0.9)
+          - text-align: center
+        img_cell:
+          - background: none
+          - border-radius: 0
+      card_mod:
+        style: |
+          ha-card:active {
+            transform: scale(0.92);
+            opacity: 0.7;
+          }
+  button3:
+    card:
+      type: custom:button-card
+      name: Menu
+      icon: mdi:view-dashboard-variant
+      show_name: true
+      show_icon: true
+      tap_action:
+        action: navigate
+        navigation_path: "#admin-settings"
+        service_data:
+          message: Button 3 pressed
+          level: info
+      styles:
+        card:
+          - border: none
+          - background: transparent
+          - box-shadow: none
+          - padding: 0
+          - cursor: pointer
+          - transition: all 0.2s ease
+        grid:
+          - grid-template-areas: "\"i\" \"n\""
+          - grid-template-rows: auto auto
+          - row-gap: 6px
+          - justify-items: center
+        icon:
+          - width: 28px
+          - height: 28px
+          - color: rgba(255,255,255,0.9)
+        name:
+          - font-size: 12px
+          - font-weight: 500
+          - color: rgba(255,255,255,0.9)
+          - text-align: center
+        img_cell:
+          - background: none
+          - border-radius: 0
+      card_mod:
+        style: |
+          ha-card:active {
+            transform: scale(0.92);
+            opacity: 0.7;
+          }
+  button4:
+    card:
+      type: custom:button-card
+      name: Cameras
+      icon: mdi:cctv
+      show_name: true
+      show_icon: true
+      tap_action:
+        action: navigate
+        navigation_path: "#cameradisplay"
+        service_data:
+          message: Button 4 pressed
+          level: info
+      styles:
+        card:
+          - border: none
+          - background: transparent
+          - box-shadow: none
+          - padding: 0
+          - cursor: pointer
+          - transition: all 0.2s ease
+        grid:
+          - grid-template-areas: "\"i\" \"n\""
+          - grid-template-rows: auto auto
+          - row-gap: 6px
+          - justify-items: center
+        icon:
+          - width: 28px
+          - height: 28px
+          - color: rgba(255,255,255,0.9)
+        name:
+          - font-size: 12px
+          - font-weight: 500
+          - color: rgba(255,255,255,0.9)
+          - text-align: center
+        img_cell:
+          - background: none
+          - border-radius: 0
+      card_mod:
+        style: |
+          .ha-card:active {
+            --navbar-primary-color:rgb(0, 0, 0);
+          }
+          .ha-card:active {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            border: none;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1) !important;
+          }

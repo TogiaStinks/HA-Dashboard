@@ -1,0 +1,256 @@
+  ios_grid_tile:
+    variables:
+      grid_on_bg: rgba(255,255,255,0.85)
+      grid_off_bg: rgba(255,255,255,0.12)
+      icon_bg_on: '#F5C542'
+      icon_bg_off: '#A0A0A0'
+      icon_color_on: white
+      icon_color_off: '#FFFFFF'
+      text_on: '#000'
+      text_off: rgba(255,255,255,0.9)
+      subtext_on: rgba(0,0,0,0.6)
+      subtext_off: rgba(255,255,255,0.7)
+      grid_alert_bg: rgba(255,255,255,0.92)
+      icon_alert_bg: '#3B82F6'
+      icon_color_alert: '#FFFFFF'
+    show_name: true
+    show_label: true
+    show_icon: false
+    tap_action:
+      action: toggle
+    hold_action:
+      action: more-info
+    layout: vertical
+    size: 28px
+    styles:
+      card:
+        - border-radius: 22px
+        - padding: 16px
+        - box-shadow: 0 6px 14px rgba(0,0,0,0.18)
+        - border: none
+        - height: 120px
+        - position: relative
+        - overflow: visible
+        - background: |
+            [[[
+              const id = (entity.entity_id || '');
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+
+              // "Alert" when a lock is UNLOCKED or a cover is OPEN/OPENING
+              const isAlert =
+                (domain === 'lock'  && s === 'unlocked') ||
+                (domain === 'cover' && (s === 'open' || s === 'opening'));
+
+              if (isAlert) return variables.grid_alert_bg;
+              
+              // When ON, match card background to the light color with more vibrant opacity
+              if (s === 'on') {
+                // Get the RGB color from light entity
+                if (domain === 'light' && entity.attributes.rgb_color) {
+                  const [r, g, b] = entity.attributes.rgb_color;
+                  // Check if this is essentially white (all values high and similar)
+                  const isWhite = r > 200 && g > 200 && b > 200 && 
+                                  Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && Math.abs(r - b) < 30;
+                  if (isWhite) {
+                    return variables.grid_on_bg;
+                  }
+                  return `rgba(${r}, ${g}, ${b}, 0.75)`;
+                }
+                // Default bright background for on state
+                return variables.grid_on_bg;
+              }
+              
+              return variables.grid_off_bg;
+            ]]]
+      grid:
+        - grid-template-columns: 1fr
+        - grid-template-rows: 1fr auto auto
+        - grid-template-areas: '"i" "n" "l"'
+        - row-gap: 8px
+        - align-items: center
+        - justify-items: start
+      name:
+        - grid-area: 'n'
+        - justify-self: start
+        - font-weight: 700
+        - font-size: 15px
+        - margin-top: 4px
+        - color: |
+            [[[
+              const id = (entity.entity_id || '');
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+              const isAlert =
+                (domain === 'lock'  && s === 'unlocked') ||
+                (domain === 'cover' && (s === 'open' || s === 'opening'));
+
+              // If alert state, use black text (white background)
+              if (isAlert) return '#000000';
+              
+              // If it's a light that's ON and has RGB color
+              if (domain === 'light' && s === 'on' && entity.attributes.rgb_color) {
+                const [r, g, b] = entity.attributes.rgb_color;
+                // Check if this is white
+                const isWhite = r > 200 && g > 200 && b > 200 && 
+                                Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && Math.abs(r - b) < 30;
+                if (isWhite) {
+                  return '#000000';  // Black text for white background
+                }
+                return '#FFFFFF';  // White text for colored background
+              }
+              
+              // For entities that are ON without color (white background), use black text
+              if (s === 'on') return '#000000';
+              
+              // Everything else (OFF state) has dark background, use white text
+              return '#FFFFFF';
+            ]]]
+      label:
+        - grid-area: l
+        - justify-self: start
+        - font-size: 13px
+        - margin-top: '-4px'
+        - color: |
+            [[[
+              const id = (entity.entity_id || '');
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+              const isAlert =
+                (domain === 'lock'  && s === 'unlocked') ||
+                (domain === 'cover' && (s === 'open' || s === 'opening'));
+
+              // If alert state, use dark gray text (white background)
+              if (isAlert) return 'rgba(0,0,0,0.6)';
+              
+              // If it's a light that's ON and has RGB color
+              if (domain === 'light' && s === 'on' && entity.attributes.rgb_color) {
+                const [r, g, b] = entity.attributes.rgb_color;
+                // Check if this is white
+                const isWhite = r > 200 && g > 200 && b > 200 && 
+                                Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && Math.abs(r - b) < 30;
+                if (isWhite) {
+                  return 'rgba(0,0,0,0.6)';  // Dark text for white background
+                }
+                return 'rgba(255,255,255,0.7)';  // White text for colored background
+              }
+              
+              // For entities that are ON without color (white background), use dark text
+              if (s === 'on') return 'rgba(0,0,0,0.6)';
+              
+              // Everything else (OFF state) has dark background, use white text
+              return 'rgba(255,255,255,0.7)';
+            ]]]
+    custom_fields:
+      btn:
+        card:
+          type: custom:button-card
+          entity: '[[[ return entity.entity_id ]]]'
+          icon: '[[[ return variables.custom_icon || entity.icon ]]]'
+          show_name: false
+          show_state: false
+          tap_action:
+            action: toggle
+          styles:
+            card:
+              - border-radius: 50%
+              - width: 40px
+              - height: 40px
+              - display: flex
+              - align-items: center
+              - justify-content: center
+              - background: |
+                  [[[ 
+                    const id = (entity.entity_id || '');
+                    const domain = id.split('.')[0] || '';
+                    const s = entity.state;
+                    const isAlert =
+                      (domain === 'lock' && s === 'unlocked') ||
+                      (domain === 'cover' && (s === 'open' || s === 'opening'));
+                    return isAlert ? variables.icon_alert_bg
+                                   : (s === 'on' ? variables.icon_bg_on : variables.icon_bg_off);
+                  ]]]  
+            icon:
+              - color: '#FFFFFF'
+      img_cell:
+        - grid-area: i
+        - align-self: start
+        - justify-self: start
+        - border-radius: 50%
+        - width: 46px
+        - height: 46px
+        - background: |
+            [[[
+              const id = (entity.entity_id || '');
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+
+              // When ON, make icon background a lighter version of the light color
+              if (s === 'on') {
+                if (domain === 'light' && entity.attributes.rgb_color) {
+                  const [r, g, b] = entity.attributes.rgb_color;
+                  // Check if this is white
+                  const isWhite = r > 200 && g > 200 && b > 200 && 
+                                  Math.abs(r - g) < 30 && Math.abs(g - b) < 30 && Math.abs(r - b) < 30;
+                  if (isWhite) {
+                    return variables.icon_bg_on;  // Default yellow for white lights
+                  }
+                  // Lighten the color by blending with white (increase each RGB value)
+                  const lighten = (val) => Math.min(255, val + (255 - val) * 0.6);
+                  const lr = Math.round(lighten(r));
+                  const lg = Math.round(lighten(g));
+                  const lb = Math.round(lighten(b));
+                  return `rgb(${lr}, ${lg}, ${lb})`;
+                }
+              }
+              
+              // Default gray when off
+              return '#A0A0A0';
+            ]]]
+      icon:
+        - width: 26px
+        - color: '#FFFFFF'
+      custom_fields:
+        action_button:
+          - position: absolute
+          - bottom: 0
+          - right: 0
+          - width: 100%
+          - height: 100%
+          - pointer-events: none
+    label: |
+      [[[
+        const id = (entity.entity_id || '');
+        const domain = id.split('.')[0] || '';
+
+        // LOCK: show Locked/Unlocked
+        if (domain === 'lock') {
+          return entity.state === 'unlocked' ? 'Unlocked' : 'Locked';
+        }
+
+        // COVER (garage door): show Open/Closed/Moving
+        if (domain === 'cover') {
+          if (entity.state === 'opening' || entity.state === 'closing') return 'Moving';
+          return entity.state === 'open' ? 'Open' : 'Closed';
+        }
+
+        // LIGHT: show brightness %
+        if (domain === 'light') {
+          if (entity.state !== 'on') return 'Off';
+          const b = entity.attributes.brightness;
+          if (b == null) return 'On';
+          return Math.round(b/2.55) + '%';
+        }
+
+        // FAN: show percentage or speed/preset
+        if (domain === 'fan') {
+          if (entity.state !== 'on') return 'Off';
+          const p = entity.attributes.percentage;
+          if (p != null) return p + '%';
+          const sp = entity.attributes.speed || entity.attributes.preset_mode;
+          return sp ? String(sp) : 'On';
+        }
+
+        // Default
+        return entity.state ? (entity.state[0].toUpperCase()+entity.state.slice(1)) : '';
+      ]]]

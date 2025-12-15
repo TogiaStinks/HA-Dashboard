@@ -1,0 +1,208 @@
+  ios_pill_tile:
+    variables:
+      pill_on_bg: rgba(255,255,255,0.85)
+      pill_off_bg: rgba(255,255,255,0.12)
+      icon_bg_on: '#F5C542'
+      icon_bg_off: '#A0A0A0'
+      icon_color: '#FFFFFF'
+      text_on: '#000'
+      text_off: rgba(255,255,255,0.9)
+      subtext_on: rgba(0,0,0,0.6)
+      subtext_off: rgba(255,255,255,0.7)
+      pill_alert_bg: rgba(255,255,255,0.92)
+      icon_alert_bg: '#3B82F6'
+    show_name: true
+    show_label: true
+    show_icon: false
+    layout: icon_name_state2
+    size: 20px
+    styles:
+      card:
+        - border-radius: 18px
+        - padding: 10px 14px
+        - box-shadow: 0 6px 14px rgba(0,0,0,0.18)
+        - border: none
+        - height: 65px
+        - width: 200px
+        - background: |
+            [[[ 
+              const id = entity.entity_id || '';
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+              const isAlert = (domain === 'lock' && s === 'unlocked') || (domain === 'cover' && (s === 'open' || s === 'opening'));
+              if (isAlert) return variables.pill_alert_bg;
+              if (domain === 'light' && s === 'on') {
+                const hs = entity.attributes.hs_color;
+                // Only show color if hs_color exists AND has actual color (not white)
+                if (hs && hs.length >= 2) {
+                  const saturation = hs[1];
+                  // If saturation is very low (< 10%), it's essentially white, show default background
+                  if (saturation < 10) {
+                    return variables.pill_on_bg;
+                  }
+                  // Has color, calculate and show the color
+                  const h = hs[0], sat = hs[1] / 100, val = (entity.attributes.brightness || 255) / 255;
+                  const c = val * sat, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = val - c;
+                  let r = 0, g = 0, b = 0;
+                  if (h < 60) { r = c; g = x; } else if (h < 120) { r = x; g = c; } 
+                  else if (h < 180) { g = c; b = x; } else if (h < 240) { g = x; b = c; }
+                  else if (h < 300) { r = x; b = c; } else { r = c; b = x; }
+                  return `rgba(${Math.round((r+m)*255)}, ${Math.round((g+m)*255)}, ${Math.round((b+m)*255)}, 0.5)`;
+                }
+              }
+              return s === 'on' ? variables.pill_on_bg : variables.pill_off_bg;
+            ]]]  
+      grid:
+        - grid-template-columns: 46px 1fr
+        - grid-template-areas: '"btn n" "btn l"'
+        - column-gap: 12px
+        - align-items: center
+      name:
+        - grid-area: 'n'
+        - justify-self: start
+        - font-weight: 700
+        - font-size: 15px
+        - color: |
+            [[[ 
+              const id = entity.entity_id || '';
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+              const isAlert = (domain === 'lock' && s === 'unlocked') || (domain === 'cover' && (s === 'open' || s === 'opening'));
+              
+              // If alert state, use black text (white background)
+              if (isAlert) return '#000000';
+              
+              // If it's a light that's ON, check if it has actual color
+              if (domain === 'light' && s === 'on') {
+                const hs = entity.attributes.hs_color;
+                // If it has hs_color with saturation > 10%, it has color, use white text
+                if (hs && hs.length >= 2 && hs[1] >= 10) {
+                  return '#FFFFFF';
+                }
+                // No color or white light, use black text (white background)
+                return '#000000';
+              }
+              
+              // For non-light entities that are ON, they have white background
+              if (s === 'on') return '#000000';
+              
+              // Everything else (OFF state) has dark background, use white text
+              return '#FFFFFF';
+            ]]]  
+      label:
+        - grid-area: l
+        - justify-self: start
+        - font-size: 13px
+        - margin-top: 0px
+        - color: |
+            [[[ 
+              const id = entity.entity_id || '';
+              const domain = id.split('.')[0] || '';
+              const s = entity.state;
+              const isAlert = (domain === 'lock' && s === 'unlocked') || (domain === 'cover' && (s === 'open' || s === 'opening'));
+              
+              // If alert state, use dark gray text (white background)
+              if (isAlert) return 'rgba(0,0,0,0.6)';
+              
+              // If it's a light that's ON, check if it has actual color
+              if (domain === 'light' && s === 'on') {
+                const hs = entity.attributes.hs_color;
+                // If it has hs_color with saturation > 10%, it has color, use white text
+                if (hs && hs.length >= 2 && hs[1] >= 10) {
+                  return 'rgba(255,255,255,0.7)';
+                }
+                // No color or white light, use dark text (white background)
+                return 'rgba(0,0,0,0.6)';
+              }
+              
+              // For non-light entities that are ON, they have white background
+              if (s === 'on') return 'rgba(0,0,0,0.6)';
+              
+              // Everything else (OFF state) has dark background, use white text
+              return 'rgba(255,255,255,0.7)';
+            ]]]  
+    custom_fields:
+      btn:
+        card:
+          type: custom:button-card
+          entity: '[[[ return entity.entity_id ]]]'
+          icon: '[[[ return variables.custom_icon || entity.icon ]]]'
+          show_name: false
+          show_state: false
+          tap_action:
+            action: toggle
+          styles:
+            card:
+              - border-radius: 50%
+              - width: 40px
+              - height: 40px
+              - display: flex
+              - align-items: center
+              - justify-content: center
+              - background: |
+                  [[[ 
+                    const id = entity.entity_id || '';
+                    const domain = id.split('.')[0] || '';
+                    const s = entity.state;
+                    const isAlert = (domain === 'lock' && s === 'unlocked') || (domain === 'cover' && (s === 'open' || s === 'opening'));
+                    if (isAlert) return variables.icon_alert_bg;
+                    if (domain === 'fan' && s === 'on') return '#3BA7FF';
+                    if (domain === 'light' && s === 'on') {
+                      const hs = entity.attributes.hs_color;
+                      if (hs && hs.length >= 2) {
+                        const saturation = hs[1];
+                        // If saturation < 10%, show default yellow icon background
+                        if (saturation < 10) {
+                          return variables.icon_bg_on;
+                        }
+                        // Has color, calculate and show the color
+                        const h = hs[0], sat = hs[1] / 100, val = (entity.attributes.brightness || 255) / 255;
+                        const c = val * sat, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = val - c;
+                        let r = 0, g = 0, b = 0;
+                        if (h < 60) { r = c; g = x; } else if (h < 120) { r = x; g = c; }
+                        else if (h < 180) { g = c; b = x; } else if (h < 240) { g = x; b = c; }
+                        else if (h < 300) { r = x; b = c; } else { r = c; b = x; }
+                        return `rgba(${Math.round((r+m)*255)}, ${Math.round((g+m)*255)}, ${Math.round((b+m)*255)}, 0.85)`;
+                      }
+                    }
+                    return s === 'on' ? variables.icon_bg_on : variables.icon_bg_off;
+                  ]]]  
+            icon:
+              - color: '#FFFFFF'
+              - animation: |
+                  [[[ 
+                    const id = entity.entity_id || '';
+                    const domain = id.split('.')[0] || '';
+                    return (domain === 'fan' && entity.state === 'on') ? 'spin 1s linear infinite' : 'none';
+                  ]]]
+          extra_styles: |
+            @keyframes spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+    tap_action:
+      action: more-info
+    label: |
+      [[[ 
+        const id = entity.entity_id || '';
+        const domain = id.split('.')[0] || '';
+        if (domain === 'lock') return entity.state === 'unlocked' ? 'Unlocked' : 'Locked';
+        if (domain === 'cover') {
+          if (['opening','closing'].includes(entity.state)) return 'Moving';
+          return entity.state === 'open' ? 'Open' : 'Closed';
+        }
+        if (domain === 'light') {
+          if (entity.state !== 'on') return 'Off';
+          const b = entity.attributes.brightness;
+          if (!b) return 'On';
+          return Math.round(b / 2.55) + '%';
+        }
+        if (domain === 'fan') {
+          if (entity.state !== 'on') return 'Off';
+          const p = entity.attributes.percentage;
+          if (p) return p + '%';
+          const sp = entity.attributes.speed || entity.attributes.preset_mode;
+          return sp || 'On';
+        }
+        return entity.state ? entity.state.charAt(0).toUpperCase() + entity.state.slice(1) : '';
+      ]]]

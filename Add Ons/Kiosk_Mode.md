@@ -4,6 +4,8 @@
 
 Modify your dashboard with **Kiosk Mode**!
 
+Download the add on: (http://homeassistant.local:8123/hacs/repository/497319128)
+
 Transform your Home Assistant interface into a clean, fullscreen display perfect for wall-mounted tablets and dedicated control panels. Kiosk Mode removes the sidebar and header, creating an immersive, distraction-free experience that focuses entirely on your smart home controls.
 
 ## Features
