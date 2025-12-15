@@ -1,3 +1,5 @@
+type: custom:button-card
+color_type: rgba(255,255,255,0.12)
 styles:
   card:
     - border-radius: 18px
