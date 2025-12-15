@@ -1,6 +1,6 @@
 # Card Color
 
-![Card Color Demo](Card_Color_GIF_Demo.gif)
+![Card Color Demo](Examples/GIFS/Card_Color_GIF_Demo.gif)
 
 Modify your dashboard with **Card Color**!
 
