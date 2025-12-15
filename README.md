@@ -4,6 +4,14 @@
 
 A clean, modern, and minimalistic dashboard design for Home Assistant that provides an elegant interface for your smart home.
 
+## UPDATES
+
+### (12/15/25) EDIT: YAML Update!
+
+Tapping a card’s icon now toggles the entity, while tapping the card body opens the More Info panel—just like native HomeKit behavior.
+
+Huge thanks to [u/fuhckos](https://github.com/fuhckos-98) for the extra code that made this possible! 
+
 ## Prerequisites
 
 Before installing this dashboard, ensure you have:
