@@ -4,7 +4,7 @@ Enhance your Home Assistant dashboard with these optional add-ons! Each add-on p
 
 ## Available Add-Ons
 
-### 🎨 [Card Color](Examples/Card_Color.md)
+### 🎨 [Card Color](Card_Color.md)
 Customize card colors to create a personalized and visually organized dashboard.
 
 ### 🌀 [Fan Control](Fan_Control.md)
